@@ -28,7 +28,7 @@ public class MainActivity extends Activity {
 	@SuppressLint("NewApi")
 	private void initilizeMap() {
         if (googleMap == null) {
-        	googleMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(
+        	googleMap = ((MapFragment) getFragmentManager().findFragmentById(
                     R.id.map)).getMap();
  
             // check if map is created successfully or not
