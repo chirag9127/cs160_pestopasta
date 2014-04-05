@@ -3,6 +3,8 @@ package com.example.cs160project;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.os.Bundle;
 import android.annotation.SuppressLint;
@@ -36,6 +38,16 @@ public class MainActivity extends Activity {
                 Toast.makeText(getApplicationContext(),
                         "Sorry! unable to create maps", Toast.LENGTH_SHORT)
                         .show();
+            }else{
+            	// latitude and longitude
+            	double latitude = 17.385044;
+            	double longitude = 78.486671;
+            	 
+            	// create marker
+            	MarkerOptions marker = new MarkerOptions().position(new LatLng(latitude, longitude)).title("Hello Maps ");
+            	 
+            	// adding marker
+            	googleMap.addMarker(marker);
             }
         }
     }
