@@ -9,7 +9,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import android.os.Bundle;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.view.Menu;
+import android.view.View;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -57,5 +59,10 @@ public class MainActivity extends Activity {
         super.onResume();
         initilizeMap();
     }
+	
+	public void getCompass(View v){
+		Intent intent = new Intent(this,Compass.class);
+		startActivity(intent);
+	}
 
 }
