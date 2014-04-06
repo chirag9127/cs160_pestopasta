@@ -18,33 +18,62 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.RatingBar;
+import android.widget.RatingBar.OnRatingBarChangeListener;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class PlayBackActivity extends Activity{
-	public TextView songName,startTimeField,endTimeField;
+	/*public TextView songName,startTimeField,endTimeField;
 	private MediaPlayer mediaPlayer;
-	private SeekBar seekbar;
+	private SeekBar seekbar;*/
 	private ImageButton playButton,pauseButton;
-	private double startTime = 0;
+	/*private double startTime = 0;
 	private double finalTime = 0;
 	public static int oneTimeOnly = 0;
-	private Handler myHandler = new Handler();
+	private Handler myHandler = new Handler();*/
+	private AudioTrack audioTrack;
+	private RatingBar ratingBar;
+	private TextView txtRatingValue;
+	private Button btnSubmit;
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
           super.onCreate(savedInstanceState);
           setContentView(R.layout.activity_playback);
-          //playRecord();
-          songName = (TextView)findViewById(R.id.textView4);
+          playRecord();
+          /*songName = (TextView)findViewById(R.id.textView4);
           startTimeField =(TextView)findViewById(R.id.textView1);
           endTimeField =(TextView)findViewById(R.id.textView2);
-          seekbar = (SeekBar)findViewById(R.id.seekBar1);
+          seekbar = (SeekBar)findViewById(R.id.seekBar1);*/
           playButton = (ImageButton)findViewById(R.id.imageButton1);
           pauseButton = (ImageButton)findViewById(R.id.imageButton2);
-          songName.setText("Test");
+          addListenerOnRatingBar();
+      	  addListenerOnButton();
+          playButton.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				audioTrack.play();
+			}
+        	  
+          });
+          
+          pauseButton.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				audioTrack.pause();
+			}
+        	  
+          });
+          /*songName.setText("Test");
           mediaPlayer = new MediaPlayer();
           try {
 			mediaPlayer.setDataSource("/sdcard/test.pcm");
@@ -62,9 +91,47 @@ public class PlayBackActivity extends Activity{
 			e.printStackTrace();
 		}
           seekbar.setClickable(false);
-          pauseButton.setEnabled(false);
+          pauseButton.setEnabled(false);*/
     }
-	public void play(View view){
+	
+	public void addListenerOnRatingBar() {
+		 
+		ratingBar = (RatingBar) findViewById(R.id.ratingBar);
+		txtRatingValue = (TextView) findViewById(R.id.txtRatingValue);
+	 
+		//if rating value is changed,
+		//display the current rating value in the result (textview) automatically
+		ratingBar.setOnRatingBarChangeListener(new OnRatingBarChangeListener() {
+			public void onRatingChanged(RatingBar ratingBar, float rating,
+				boolean fromUser) {
+	 
+				txtRatingValue.setText(String.valueOf(rating));
+	 
+			}
+		});
+	  }
+	 
+	  public void addListenerOnButton() {
+	 
+		ratingBar = (RatingBar) findViewById(R.id.ratingBar);
+		btnSubmit = (Button) findViewById(R.id.btnSubmit);
+	 
+		//if click on me, then display the current rating value.
+		btnSubmit.setOnClickListener(new OnClickListener() {
+	 
+			@Override
+			public void onClick(View v) {
+	 
+				Toast.makeText(PlayBackActivity.this,
+					String.valueOf(ratingBar.getRating()),
+						Toast.LENGTH_SHORT).show();
+	 
+			}
+	 
+		});
+	 
+	  }
+	/*public void play(View view){
 		   Toast.makeText(getApplicationContext(), "Playing sound", 
 		   Toast.LENGTH_SHORT).show();
 		      mediaPlayer.start();
@@ -113,7 +180,7 @@ public class PlayBackActivity extends Activity{
 		      mediaPlayer.pause();
 		      pauseButton.setEnabled(false);
 		      playButton.setEnabled(true);
-		   }
+		   }*/
 	void playRecord(){
 		  
 		  File file = new File(Environment.getExternalStorageDirectory(), "test.pcm");
@@ -136,7 +203,7 @@ public class PlayBackActivity extends Activity{
 		   
 		   dataInputStream.close();
 		   
-		   AudioTrack audioTrack = new AudioTrack(
+		   audioTrack = new AudioTrack(
 		     AudioManager.STREAM_MUSIC,
 		     11025,
 		     AudioFormat.CHANNEL_CONFIGURATION_MONO,

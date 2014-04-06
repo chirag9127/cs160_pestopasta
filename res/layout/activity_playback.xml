@@ -8,7 +8,7 @@
    android:paddingTop="@dimen/activity_vertical_margin"
    tools:context=".PlayBackActivity" >
 
-   <ImageButton
+   <!-- <ImageButton
       android:id="@+id/imageButton3"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
@@ -27,7 +27,7 @@
       android:layout_marginLeft="22dp"
       android:layout_toRightOf="@+id/imageButton2"
       android:onClick="rewind"
-      android:src="@android:drawable/ic_media_rew" />
+      android:src="@android:drawable/ic_media_rew" /> -->
 
    <ImageButton
       android:id="@+id/imageButton2"
@@ -49,7 +49,7 @@
       android:onClick="play"
       android:src="@android:drawable/ic_media_play" />
 
-   <SeekBar
+   <!--  <SeekBar
       android:id="@+id/seekBar1"
       android:layout_width="match_parent"
       android:layout_height="wrap_content" 
@@ -99,6 +99,47 @@
       android:layout_alignBaseline="@+id/textView3"
       android:layout_alignBottom="@+id/textView3"
       android:layout_toRightOf="@+id/imageButton1"
-      android:text="TextView" />
+      android:text="TextView" />-->
+   <TextView
+        android:id="@+id/lblRateMe"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rate Me"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+ 
+    <RatingBar
+        android:id="@+id/ratingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numStars="4"
+        android:stepSize="1.0"
+        android:rating="2.0" />
+ 
+    <Button
+        android:id="@+id/btnSubmit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Submit" />
+ 
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+ 
+        <TextView
+            android:id="@+id/lblResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Result : "
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+ 
+        <TextView
+            android:id="@+id/txtRatingValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+ 
+    </LinearLayout>
 
 </RelativeLayout>
