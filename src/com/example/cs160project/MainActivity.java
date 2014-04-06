@@ -56,7 +56,7 @@ public class MainActivity extends Activity {
 
 					@Override
 					public boolean onMarkerClick(Marker arg0) {
-						arg0.showInfoWindow();
+						//arg0.showInfoWindow();
 						Intent intent= new Intent(MainActivity.this, PlayBackActivity.class);
                         startActivity(intent);
 						return false;
