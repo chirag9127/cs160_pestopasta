@@ -1134,10 +1134,11 @@ containing a value of this type.
         public static final int action_menu_divider=0x7f070018;
         public static final int action_menu_presenter=0x7f070019;
         public static final int action_mode_close_button=0x7f070027;
-        public static final int action_settings=0x7f070040;
+        public static final int action_settings=0x7f070045;
         public static final int activity_chooser_view_content=0x7f070028;
         public static final int always=0x7f070012;
         public static final int beginning=0x7f07000a;
+        public static final int btnSubmit=0x7f070044;
         public static final int checkbox=0x7f070030;
         public static final int collapseActionView=0x7f070014;
         public static final int default_activity_button=0x7f07002b;
@@ -1154,6 +1155,9 @@ containing a value of this type.
         public static final int icon=0x7f07002d;
         public static final int ifRoom=0x7f070011;
         public static final int image=0x7f07002a;
+        public static final int imageButton1=0x7f070041;
+        public static final int imageButton2=0x7f070040;
+        public static final int lblRateMe=0x7f070042;
         public static final int listMode=0x7f070001;
         public static final int list_item=0x7f07002c;
         public static final int map=0x7f07003f;
@@ -1164,6 +1168,7 @@ containing a value of this type.
         public static final int progress_circular=0x7f07001b;
         public static final int progress_horizontal=0x7f07001c;
         public static final int radio=0x7f070032;
+        public static final int ratingBar=0x7f070043;
         public static final int satellite=0x7f07000d;
         public static final int search_badge=0x7f070035;
         public static final int search_bar=0x7f070034;
@@ -1218,11 +1223,14 @@ containing a value of this type.
         public static final int abc_search_dropdown_item_icons_2line=0x7f030015;
         public static final int abc_search_view=0x7f030016;
         public static final int abc_simple_decor=0x7f030017;
-        public static final int activity_main=0x7f030018;
-        public static final int support_simple_spinner_dropdown_item=0x7f030019;
+        public static final int activity_database_interface=0x7f030018;
+        public static final int activity_main=0x7f030019;
+        public static final int activity_playback=0x7f03001a;
+        public static final int support_simple_spinner_dropdown_item=0x7f03001b;
     }
     public static final class menu {
-        public static final int main=0x7f0c0000;
+        public static final int database_interface=0x7f0c0000;
+        public static final int main=0x7f0c0001;
     }
     public static final class string {
         public static final int abc_action_bar_home_description=0x7f0a0000;
@@ -1267,7 +1275,9 @@ containing a value of this type.
         public static final int common_signin_button_text=0x7f0a0027;
         public static final int common_signin_button_text_long=0x7f0a0028;
         public static final int hello_world=0x7f0a0029;
-        public static final int location_client_powered_by_google=0x7f0a002a;
+        public static final int inital_Time=0x7f0a002a;
+        public static final int location_client_powered_by_google=0x7f0a002b;
+        public static final int title_activity_database_interface=0x7f0a002c;
     }
     public static final class style {
         /** 
