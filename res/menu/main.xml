@@ -6,4 +6,16 @@
         android:showAsAction="never"
         android:title="@string/action_settings"/>
 
+    <item
+        android:id="@+id/filter"
+        android:showAsAction="ifRoom"
+        android:title="FILTER"
+        />
+
+    <item
+        android:id="@+id/compass"
+        android:showAsAction="ifRoom"
+        android:title="compass"
+        android:icon="@drawable/compass_icon"/>
+
 </menu>
