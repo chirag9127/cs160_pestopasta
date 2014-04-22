@@ -1,11 +1,16 @@
 package com.pestopasta.cluzcs160;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,13 +29,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.io.File;
 import java.util.HashMap;
 
-public class MainActivity extends Activity implements LocationListener {
+public class MainActivity extends Activity implements LocationListener, GoogleMap.OnMapClickListener {
 
 	Button addTag;
 	//private LocationManager locationManager;
 	//private LocationListener locListener;
 	private String provider;
-	@Override
+    Handler h = new Handler();
+
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
@@ -82,10 +89,23 @@ public class MainActivity extends Activity implements LocationListener {
                 startActivity(intent);
 				return false;
 			}
-    		
-    	});
+            	});
+
+        SystemBarTintManager tintManager = new SystemBarTintManager(com.pestopasta.cluzcs160.MainActivity.this);
+        tintManager.setStatusBarTintEnabled(true);
+        int actionBarColor = Color.parseColor("#BBffffff");
+        tintManager.setStatusBarTintColor(actionBarColor);
+
+        Thread t = new Thread(animateActionBarHide);
+        t.start();
 	}
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Thread t = new Thread(animateActionBarHide);
+        t.start();
+    }
 	
 	/*@Override
 	protected void onResume() {
@@ -192,6 +212,20 @@ public class MainActivity extends Activity implements LocationListener {
 			myMap = ((MapFragment) getFragmentManager().findFragmentById(
 					R.id.map)).getMap();
 			myMap.setMyLocationEnabled(true);
+            int actionBarHeight = 0;
+            TypedValue tv = new TypedValue();
+            if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+            {
+                actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                SystemBarTintManager tintManager = new SystemBarTintManager(com.pestopasta.cluzcs160.MainActivity.this);
+                int statusBarHeight = tintManager.getConfig().getStatusBarHeight();
+                myMap.setPadding(0,statusBarHeight+actionBarHeight,0,0);
+            } else {
+                myMap.setPadding(0, actionBarHeight, 0, 0);
+            }
+            myMap.setOnMapClickListener(this);
 			//myMap.setOnMarkerClickListener(this);
 		}
 	}
@@ -237,4 +271,89 @@ public class MainActivity extends Activity implements LocationListener {
 		Toast.makeText(this, af.mySnip, Toast.LENGTH_LONG);
 		return false;
 	}*/
+
+    public void onMapClick(LatLng point) {
+        Thread t = new Thread(animateActionBarShow);
+        t.start();
+    }
+
+    Runnable hideActionbarRunnable = new Runnable() {
+        @Override
+        public void run() {
+            ActionBar bar = getActionBar();
+            if (bar != null) {
+
+                bar.hide();
+                setUpMapIfNeeded();
+                /*
+                // Only set the tint if the device is running KitKat or above
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    SystemBarTintManager tintManager = new SystemBarTintManager(com.pestopasta.cluzcs160.MainActivity.this);
+                    tintManager.setStatusBarTintEnabled(true);
+                    tintManager.setTintAlpha(0);
+                    int id = getResources().getIdentifier("config_enableTranslucentDecor", "bool", "android");
+                    if (id == 0) {
+                        // not on KitKat
+                    } else {
+                        boolean enabled = getResources().getBoolean(id);
+                        // enabled = are translucent bars supported on this device
+                        if (enabled) {
+                            Window w = getWindow();
+                            w.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION,WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+                        }
+                    }
+                }
+                */
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    SystemBarTintManager tintManager = new SystemBarTintManager(com.pestopasta.cluzcs160.MainActivity.this);
+                    int statusBarHeight = tintManager.getConfig().getStatusBarHeight();
+                    myMap.setPadding(0, statusBarHeight, 0, 0);
+                } else {
+                    myMap.setPadding(0, 0, 0, 0);
+                }
+            }
+        }
+    };
+
+    Runnable showActionbarRunnable = new Runnable() {
+        @Override
+        public void run() {
+            ActionBar bar = getActionBar();
+            if (bar != null) {
+                bar.show();
+                setUpMapIfNeeded();
+                int actionBarHeight = 0;
+                TypedValue tv = new TypedValue();
+                if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+                    actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+                }
+                // Only set the tint if the device is running KitKat or above
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    SystemBarTintManager tintManager = new SystemBarTintManager(com.pestopasta.cluzcs160.MainActivity.this);
+                    //tintManager.setStatusBarTintEnabled(true);
+                    //int actionBarColor = Color.parseColor("#BBffffff");
+                    //tintManager.setStatusBarTintColor(actionBarColor);
+                    int statusBarHeight = tintManager.getConfig().getStatusBarHeight();
+                    myMap.setPadding(0, statusBarHeight + actionBarHeight, 0, 0);
+                } else {
+                    myMap.setPadding(0, actionBarHeight, 0, 0);
+                }
+            }
+        }
+    };
+
+    Runnable animateActionBarShow = new Runnable() {
+        @Override
+        public void run() {
+            h.post(showActionbarRunnable);
+            h.postDelayed(hideActionbarRunnable,8000);
+        }
+    };
+
+    Runnable animateActionBarHide = new Runnable() {
+        @Override
+        public void run() {
+            h.postDelayed(hideActionbarRunnable,8000);
+        }
+    };
 }

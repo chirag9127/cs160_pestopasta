@@ -2,6 +2,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:padding="40dp"
+    android:id="@+id/addtagLayout"
     >
     <LinearLayout
         android:id="@+id/editText1Holder"
@@ -45,7 +46,6 @@
         android:layout_width="fill_parent"
         android:layout_height="50dp"
         android:layout_above="@+id/doneButton"
-        android:layout_alignLeft="@+id/doneButton"
         android:layout_marginBottom="5dp"
         android:background="@drawable/buttonshape"
         android:textColor="#ffffff"

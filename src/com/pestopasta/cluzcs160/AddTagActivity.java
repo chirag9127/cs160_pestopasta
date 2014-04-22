@@ -58,6 +58,18 @@ public class AddTagActivity extends Activity {
         playBack.setOnClickListener(playBackOnClickListener);
         done.setOnClickListener(doneOnClickListener);
 
+        /*
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            SystemBarTintManager tintManager = new SystemBarTintManager(AddTagActivity.this);
+            tintManager.setStatusBarTintEnabled(true);
+            int actionBarColor = Color.parseColor("#BBffffff");
+            tintManager.setStatusBarTintColor(actionBarColor);
+            RelativeLayout relLayout = (RelativeLayout)findViewById(R.id.addtagLayout);
+            int statusBarHeight = tintManager.getConfig().getStatusBarHeight();
+            relLayout.setPadding(40, 40+statusBarHeight, 40, 40);
+        }
+        */
+
     }
     
     OnClickListener startRecOnClickListener

@@ -41,38 +41,51 @@ public class PlayBackActivity extends Activity{
       	  addListenerOnButton();
           playButton.setOnClickListener(new OnClickListener(){
 
-			@Override
-			public void onClick(View v) {
-				//System.out.println("GSFSDFSADFASFASDFSDFADFSADFSADFADFASFSDFSDF");
-				//audioTrack.play();
-				Thread loopbackThread;
-				if(!paused) {
-					paused = true;
-					playButton.setBackground(getResources().getDrawable(R.drawable.stop_red));
-					loopbackThread = new Thread(new Runnable() {
+            @Override
+            public void onClick(View v) {
+                //System.out.println("GSFSDFSADFASFASDFSDFADFSADFSADFADFASFSDFSDF");
+                //audioTrack.play();
+                Thread loopbackThread;
+                if(!paused) {
+                    paused = true;
+                    playButton.setBackground(getResources().getDrawable(R.drawable.stop_red));
+                    loopbackThread = new Thread(new Runnable() {
 
-						@Override
-						public void run() {
-							playRecord();
-						}
-						
-					});
-					
-					loopbackThread.start();
-					//playRecord();
-				} else {
-					playButton.setBackground(getResources().getDrawable(R.drawable.play_red));
-					//System.out.println("TTTTTTTTTTTTTJJJJJJJJJJJJJJJJJKKKKKKKK");
-					audioTrack.pause();
-					//loopbackThread.interrupt();
-					//audioTrack.stop();
-					paused = false;
-				}
+                        @Override
+                        public void run() {
+                            playRecord();
+                        }
 
-			}
+                    });
+
+                    loopbackThread.start();
+                    //playRecord();
+                } else {
+                    playButton.setBackground(getResources().getDrawable(R.drawable.play_red));
+                    //System.out.println("TTTTTTTTTTTTTJJJJJJJJJJJJJJJJJKKKKKKKK");
+                    audioTrack.pause();
+                    //loopbackThread.interrupt();
+                    //audioTrack.stop();
+                    paused = false;
+                }
+
+            }
+
         	  
           });
-          
+
+        /*
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            SystemBarTintManager tintManager = new SystemBarTintManager(PlayBackActivity.this);
+            tintManager.setStatusBarTintEnabled(true);
+            int actionBarColor = Color.parseColor("#BBffffff");
+            tintManager.setStatusBarTintColor(actionBarColor);
+            RelativeLayout relLayout = (RelativeLayout)findViewById(R.id.playbackLayout);
+            int statusBarHeight = tintManager.getConfig().getStatusBarHeight();
+            relLayout.setPadding(40, 40+statusBarHeight, 40, 40);
+        }
+        */
+
           /*pauseButton.setOnClickListener(new OnClickListener(){
 
 			@Override
