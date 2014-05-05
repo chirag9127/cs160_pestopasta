@@ -9,10 +9,15 @@ import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.google.cloud.backend.core.AsyncBlobUploader;
+import com.google.cloud.backend.core.CloudBackend;
+import com.google.cloud.backend.core.CloudEntity;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -33,6 +38,10 @@ public class AddTagActivity extends Activity {
 	double x, y;
 	Boolean recording = false;
 	File myFile;
+
+    private final static int AUDIO_TYPE = 1111;
+    private final static int IMAGE_TYPE = 1112;
+    private final static int VIDEO_TYPE = 1113;
 	
     /** Called when the activity is first created. */
     @Override
@@ -69,6 +78,17 @@ public class AddTagActivity extends Activity {
             relLayout.setPadding(40, 40+statusBarHeight, 40, 40);
         }
         */
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Bundle bun = new Bundle();
+                bun.putString("fileName", "test5.pcm");
+                System.out.println("starting putTag");
+                putTag(38.871993, -122.257862, bun);
+                System.out.println("starting putTag");
+            }
+        }).start();
 
     }
     
@@ -224,6 +244,44 @@ public class AddTagActivity extends Activity {
 			e.printStackTrace();
 		}
 	}
+
+    public boolean putTag(double latitude, double longitude, Bundle wrapper) {
+        //if (wrapper.containsKey("Tags") && wrapper.containsKey("tagTitle") && wrapper.containsKey("tagContentType") && wrapper.containsKey("fileName")) {
+        if (wrapper.containsKey("fileName")) {
+            CloudEntity tag = new CloudEntity("Tag");
+            String tagTitle = wrapper.getString("tagTitle");
+            final int tagContentType = wrapper.getInt("tagContentType");
+            String fileName = wrapper.getString("fileName");
+            tag.put("title", tagTitle);
+            tag.put("contentType", tagContentType);
+            tag.put("latitude", latitude);
+            tag.put("longitude", longitude);
+
+            System.out.println("Shit works!");
+
+            final CloudBackend cb;
+            try {
+                cb = new CloudBackend();
+                cb.insert(tag);
+            } catch (IOException e) {
+                Log.e("Error", "Updating database failed");
+                return false;
+            }
+
+            final File fileUp = new File(Environment.getExternalStorageDirectory(), fileName);
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    new AsyncBlobUploader(AddTagActivity.this, cb, AUDIO_TYPE).execute(fileUp);
+                }
+            });
+            return true;
+        } else {
+            Log.d("Placing tag", "Missing necessary values");
+            return false;
+        }
+    }
 
 	
 

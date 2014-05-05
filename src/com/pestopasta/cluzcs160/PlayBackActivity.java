@@ -5,6 +5,7 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -13,6 +14,9 @@ import android.widget.RatingBar;
 import android.widget.RatingBar.OnRatingBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.cloud.backend.core.CloudBackend;
+import com.google.cloud.backend.core.CloudEntity;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -29,6 +33,10 @@ public class PlayBackActivity extends Activity{
 	private RatingBar ratingBar;
 	private Button btnSubmit;
 	private boolean paused = false;
+
+    private final static int AUDIO_TYPE = 1111;
+    private final static int IMAGE_TYPE = 1112;
+    private final static int VIDEO_TYPE = 1113;
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -195,4 +203,22 @@ public class PlayBackActivity extends Activity{
 		   e.printStackTrace();
 		  }
 		 }
+
+    public Bundle getTag(String id) {
+        Bundle wrapper = new Bundle();
+        try {
+            CloudBackend cb = new CloudBackend();
+            CloudEntity tag = cb.get("Tag", id);
+            for (String key: tag.getProperties().keySet()) {
+                if ((tag.get(key)) instanceof String) {
+                    wrapper.putString(key, (String) tag.get(key));
+                } else if ((tag.get(key)) instanceof Integer) {
+                    wrapper.putInt(key, (Integer) tag.get(key));
+                }
+            }
+        } catch (IOException e) {
+            Log.e("Error", "Retrieving tag from database failed");
+        }
+        return wrapper;
+    }
 }

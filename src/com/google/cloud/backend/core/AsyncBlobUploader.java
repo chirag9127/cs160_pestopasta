@@ -31,6 +31,7 @@ public class AsyncBlobUploader extends AsyncTask<File, Void, String> {
     public AsyncBlobUploader(Context context, CloudBackend cb, int mediaType) {
         this.context = context;
         this.cb = cb;
+        System.out.println("AsyncBlobUploader constructor");
         if (mediaType == AUDIO_TYPE) {
             this.bucketName = "audio_tags";
         } else if (mediaType == IMAGE_TYPE) {
