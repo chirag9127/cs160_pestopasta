@@ -24,9 +24,9 @@
         <!-- any stuff common here, colours, etc -->
 
         <!-- define the style for native ActionBar for Android 4 and higher -->
-        <item name="android:actionBarStyle">@style/myActionbarTransparent</item>
-        <item name="android:actionBarTabTextStyle">@style/myActionbar.myTabStyle</item>
-        <item name="android:popupMenuStyle">@style/MyPopupMenu</item>
+        <item name="android:actionBarStyle">@style/myActionbarOldTransparent</item>
+        <item name="android:actionBarTabTextStyle">@style/myActionbarOld.myTabStyle</item>
+            <item name="android:popupMenuStyle">@style/MyPopupMenu</item>
         <item name="android:selectableItemBackground">@drawable/ad_selectable_background</item>
         <item name="android:dropDownListViewStyle">@style/MyDropDownListView</item>
         <item name="android:actionBarTabStyle">@style/MyActionBarTabStyle</item>
@@ -34,7 +34,7 @@
         <item name="android:listChoiceIndicatorMultiple">@drawable/ad_btn_check_holo_light</item>
         <item name="android:listChoiceIndicatorSingle">@drawable/ad_btn_radio_holo_light</item>
         <!-- define the style for ActionBarSherlock -->
-        <item name="actionBarStyle">@style/myActionbarTransparent</item>
+        <item name="actionBarStyle">@style/myActionbarOldTransparent</item>
     </style>
 
     <style name="MyThemeNoOverlay" parent="android:style/Theme.Holo.Light">
@@ -43,8 +43,8 @@
         <!-- any stuff specific for no overlay activity action bars -->
 
         <!-- define the style for native ActionBar for Android 4 and higher -->
-        <item name="android:actionBarStyle">@style/myActionbar</item>
-        <item name="android:actionBarTabTextStyle">@style/myActionbar.myTabStyle</item>
+        <item name="android:actionBarStyle">@style/myActionbarOld</item>
+        <item name="android:actionBarTabTextStyle">@style/myActionbarOld.myTabStyle</item>
         <item name="android:popupMenuStyle">@style/MyPopupMenu</item>
         <item name="android:selectableItemBackground">@drawable/ad_selectable_background</item>
         <item name="android:dropDownListViewStyle">@style/MyDropDownListView</item>
@@ -53,23 +53,23 @@
         <item name="android:listChoiceIndicatorMultiple">@drawable/ad_btn_check_holo_light</item>
         <item name="android:listChoiceIndicatorSingle">@drawable/ad_btn_radio_holo_light</item>
         <!-- define the style for ActionBarSherlock -->
-        <item name="actionBarStyle">@style/myActionbar</item>
+        <item name="actionBarStyle">@style/myActionbarOld</item>
     </style>
 
-    <style name="myActionbar" parent="@android:style/Widget.Holo.Light.ActionBar">
+    <style name="myActionbarOld" parent="@android:style/Widget.Holo.Light.ActionBar">
         <item name="android:background">@android:color/white</item>
         <item name="actionMenuTextColor">@android:color/black</item>
         <item name="android:textColor">@android:color/black</item>
         <item name="android:actionMenuTextColor">@android:color/black</item>
     </style>
-    <style name="myActionbarTransparent" parent="@android:style/Widget.Holo.Light.ActionBar">
+    <style name="myActionbarOldTransparent" parent="@android:style/Widget.Holo.Light.ActionBar">
         <item name="android:background">#BBffffff</item>
         <item name="actionMenuTextColor">@android:color/black</item>
         <item name="android:textColor">@android:color/black</item>
         <item name="android:actionMenuTextColor">@android:color/black</item>
     </style>
 
-    <style name="myActionbar.myTabStyle" parent="@android:style/Widget.Holo.Light.ActionBar">
+    <style name="myActionbarOld.myTabStyle" parent="@android:style/Widget.Holo.Light.ActionBar">
         <item name="android:background">#BBffffff</item>
         <item name="actionMenuTextColor">@android:color/black</item>
         <item name="android:textColor">@android:color/black</item>

@@ -147,7 +147,7 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
         */
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                R.drawable.ic_drawer, //nav menu toggle icon
+                R.drawable.purpletheme_ic_navigation_drawer, //nav menu toggle icon
                 R.string.app_name, // nav drawer open - description for accessibility
                 R.string.app_name // nav drawer close - description for accessibility
         ){
@@ -525,8 +525,12 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
 	}*/
 
     public void onMapClick(LatLng point) {
-        Thread t = new Thread(animateActionBarShowTemp);
-        t.start();
+        ActionBar bar = getActionBar();
+        if (bar.isShowing()) {
+            (new Thread(animateActionBarHide)).start();
+        } else {
+            (new Thread(animateActionBarShowTemp)).start();
+        }
     }
 
     Runnable hideActionbarRunnable = new Runnable() {
