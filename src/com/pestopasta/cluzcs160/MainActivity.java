@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
@@ -20,9 +21,12 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -34,12 +38,16 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.cloud.backend.core.CloudBackend;
+import com.google.cloud.backend.core.CloudEntity;
+import com.google.cloud.backend.core.CloudQuery;
 import com.pestopasta.slidingmenu.adapter.NavDrawerListAdapter;
 import com.pestopasta.slidingmenu.model.NavDrawerItem;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends Activity implements LocationListener, GoogleMap.OnMapClickListener {
 
@@ -88,14 +96,19 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
         navDrawerItems = new ArrayList<NavDrawerItem>();
 
         // adding nav drawer items to array
+
+        // User image
+        navDrawerItems.add(new NavDrawerItem(0, null));
+        // Filter header
+        navDrawerItems.add(new NavDrawerItem("Filters"));
+        // Public checkbox
+        navDrawerItems.add(new NavDrawerItem(1, "Search"));
+        // Public checkbox
+        navDrawerItems.add(new NavDrawerItem(2, "Public"));
+        // Private checkbox
+        navDrawerItems.add(new NavDrawerItem(2, "Private"));
         // Save
         navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
-        // Brush
-        navDrawerItems.add(new NavDrawerItem(navMenuTitles[1], navMenuIcons.getResourceId(1, -1)));
-        // Discard
-        navDrawerItems.add(new NavDrawerItem(navMenuTitles[2], navMenuIcons.getResourceId(2, -1)));
-        // About
-        navDrawerItems.add(new NavDrawerItem(navMenuTitles[3], navMenuIcons.getResourceId(3, -1)));
 
 
         // Recycle the typed array
@@ -104,7 +117,7 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
         mDrawerList.setOnItemClickListener(new SlideMenuClickListener());
 
         // setting the nav drawer list adapter
-        adapter = new NavDrawerListAdapter(getApplicationContext(),
+        adapter = new NavDrawerListAdapter(this, R.layout.drawer_list_item,
                 navDrawerItems);
         mDrawerList.setAdapter(adapter);
 
@@ -142,15 +155,18 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
                 getActionBar().setTitle(mTitle);
                 // calling onPrepareOptionsMenu() to show action bar icons
                 invalidateOptionsMenu();
+                h.post(animateActionBarHide);
             }
 
             public void onDrawerOpened(View drawerView) {
                 getActionBar().setTitle(mDrawerTitle);
                 // calling onPrepareOptionsMenu() to hide action bar icons
                 invalidateOptionsMenu();
+                h.post(animateActionBarShow);
             }
         };
 
+        mDrawerLayout.setScrimColor(Color.parseColor("#88ffffff"));
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
         if (savedInstanceState == null) {
@@ -160,8 +176,9 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
 
         getMyLocation();
 		setUpMapIfNeeded();
-		
-		//Hardcoding marker
+        hideActionbarRunnable.run();
+
+        //Hardcoding marker
 		/*MarkerOptions marker = new MarkerOptions().position(new LatLng(37.871993, -122.257862))
 				.title("New Clue");
 		Marker m = myMap.addMarker(marker);*/
@@ -213,9 +230,6 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
         int actionBarColor = Color.parseColor("#BBffffff");
         tintManager.setStatusBarTintColor(actionBarColor);
 
-        Thread t = new Thread(animateActionBarHide);
-        t.start();
-
 	}
 
 
@@ -236,8 +250,31 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
     @Override
     protected void onResume() {
         super.onResume();
-        Thread t = new Thread(animateActionBarHide);
+        Thread t = new Thread(animateActionBarShowTemp);
         t.start();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+
+        View v = getCurrentFocus();
+        boolean ret = super.dispatchTouchEvent(event);
+
+        if (v instanceof EditText) {
+            View w = getCurrentFocus();
+            int scrcoords[] = new int[2];
+            w.getLocationOnScreen(scrcoords);
+            float x = event.getRawX() + w.getLeft() - scrcoords[0];
+            float y = event.getRawY() + w.getTop() - scrcoords[1];
+
+            //Log.d("Activity", "Touch event "+event.getRawX()+","+event.getRawY()+" "+x+","+y+" rect "+w.getLeft()+","+w.getTop()+","+w.getRight()+","+w.getBottom()+" coords "+scrcoords[0]+","+scrcoords[1]);
+            if (event.getAction() == MotionEvent.ACTION_UP && (x < w.getLeft() || x >= w.getRight() || y < w.getTop() || y > w.getBottom()) ) {
+
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getWindow().getCurrentFocus().getWindowToken(), 0);
+            }
+        }
+        return ret;
     }
 	
 	/*@Override
@@ -289,6 +326,7 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
         // if nav drawer is opened, hide the action items
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
         menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
+        menu.findItem(R.id.compass).setVisible(!drawerOpen);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -307,7 +345,7 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        // Pass any configuration change to the drawer toggls
+        // Pass any configuration change to the drawer toggles
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 	
@@ -487,7 +525,7 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
 	}*/
 
     public void onMapClick(LatLng point) {
-        Thread t = new Thread(animateActionBarShow);
+        Thread t = new Thread(animateActionBarShowTemp);
         t.start();
     }
 
@@ -499,6 +537,7 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
 
                 bar.hide();
                 setUpMapIfNeeded();
+                DrawerLayout.LayoutParams lp = (DrawerLayout.LayoutParams) mDrawerList.getLayoutParams();
                 /*
                 // Only set the tint if the device is running KitKat or above
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -522,8 +561,12 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
                     SystemBarTintManager tintManager = new SystemBarTintManager(com.pestopasta.cluzcs160.MainActivity.this);
                     int statusBarHeight = tintManager.getConfig().getStatusBarHeight();
                     myMap.setPadding(0, statusBarHeight, 0, 0);
+                    lp.setMargins(0, statusBarHeight, 0, 0);
+                    mDrawerList.setLayoutParams(lp);
                 } else {
                     myMap.setPadding(0, 0, 0, 0);
+                    lp.setMargins(0, 0, 0, 0);
+                    mDrawerList.setLayoutParams(lp);
                 }
             }
         }
@@ -538,6 +581,7 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
                 setUpMapIfNeeded();
                 int actionBarHeight = 0;
                 TypedValue tv = new TypedValue();
+                DrawerLayout.LayoutParams lp = (DrawerLayout.LayoutParams) mDrawerList.getLayoutParams();
                 if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
                     actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
                 }
@@ -549,14 +593,18 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
                     //tintManager.setStatusBarTintColor(actionBarColor);
                     int statusBarHeight = tintManager.getConfig().getStatusBarHeight();
                     myMap.setPadding(0, statusBarHeight + actionBarHeight, 0, 0);
+                    lp.setMargins(0, statusBarHeight + actionBarHeight, 0, 0);
+                    mDrawerList.setLayoutParams(lp);
                 } else {
                     myMap.setPadding(0, actionBarHeight, 0, 0);
+                    lp.setMargins(0, actionBarHeight, 0, 0);
+                    mDrawerList.setLayoutParams(lp);
                 }
             }
         }
     };
 
-    Runnable animateActionBarShow = new Runnable() {
+    Runnable animateActionBarShowTemp = new Runnable() {
         @Override
         public void run() {
             h.post(showActionbarRunnable);
@@ -565,12 +613,34 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
         }
     };
 
+    Runnable animateActionBarShow = new Runnable() {
+        @Override
+        public void run() {
+            h.post(showActionbarRunnable);
+            h.removeCallbacksAndMessages(null);
+        }
+    };
+
     Runnable animateActionBarHide = new Runnable() {
         @Override
         public void run() {
             h.removeCallbacksAndMessages(null);
-            h.postDelayed(hideActionbarRunnable,8000);
+            h.post(hideActionbarRunnable);
         }
     };
+
+    public void getTagsWithin() {
+        try {
+            CloudBackend cb = new CloudBackend();
+            CloudQuery cq = new CloudQuery("Tags");
+            List<CloudEntity> l = cb.list(cq);
+            for (CloudEntity elem: l) {
+                System.out.println(elem);
+            }
+
+        } catch (Exception e) {
+            Log.e("TAGERROR", "blah");
+        }
+    }
 
 }
