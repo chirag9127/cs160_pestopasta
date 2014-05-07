@@ -7,6 +7,7 @@ import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -15,9 +16,20 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.cloud.backend.core.AsyncBlobDownloader;
 import com.google.cloud.backend.core.AsyncBlobUploader;
 import com.google.cloud.backend.core.CloudBackend;
 import com.google.cloud.backend.core.CloudEntity;
+import com.google.cloud.backend.core.CloudQuery;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -30,7 +42,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 public class AddTagActivity extends Activity {
 	
@@ -62,6 +77,12 @@ public class AddTagActivity extends Activity {
         //String s = "Your Location:" + intent.getStringExtra("lat") + " , " + intent.getStringExtra("long");
         //System.out.println("MAYAYAMAYHFFODFF:" + intent.getStringExtra("lat"));
         //playBack.setText(s);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                getTagsWithinCooords(12,12,12,12);
+            }
+        });
         startRec.setOnClickListener(startRecOnClickListener);
         //stopRec.setOnClickListener(stopRecOnClickListener);
         playBack.setOnClickListener(playBackOnClickListener);
@@ -78,17 +99,6 @@ public class AddTagActivity extends Activity {
             relLayout.setPadding(40, 40+statusBarHeight, 40, 40);
         }
         */
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Bundle bun = new Bundle();
-                bun.putString("fileName", "test5.pcm");
-                System.out.println("starting putTag");
-                putTag(38.871993, -122.257862, bun);
-                System.out.println("starting putTag");
-            }
-        }).start();
 
     }
     
@@ -147,14 +157,37 @@ public class AddTagActivity extends Activity {
 			//		.title("New Clue 2");
 			System.out.println("in ADDTAG");
 			EditText et=(EditText)findViewById(R.id.editText1);
-			String txt=et.getText().toString();
+			txt=et.getText().toString();
+            //PostTask pt = new PostTask();
+            //pt.execute()
 			HashMap<Integer, AudioFile> temp= MainActivity.db;
-			temp.put(MainActivity.count, new AudioFile(txt, x, y, ""+MainActivity.count, myFile));
-			//MainActivity.count += 1;
-			Intent intent = new Intent(AddTagActivity.this, MainActivity.class);
-			MainActivity.db = temp;
+			temp.put(MainActivity.count, new AudioFile(txt, x, y, "" + MainActivity.count, myFile));
+            String[] arr = new String[2];
+            arr[0] = txt;
+            arr[1] = (x + " " + y);
+            PostTask pt = new PostTask();
+            pt.execute(arr);
+			//MainActivity.count += 1;j7t
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        CloudBackend cb = new CloudBackend();
+                        //File file = new File(Environment.getExternalStorageDirectory(), "test3.pcm");
+                        Log.d("ADDTAG", "Test");
+                        final File fileUp = new File(Environment.getExternalStorageDirectory(), txt.replace(" ", "_") + ".pcm");
+                        //final File fileUp = new File(Environment.getExternalStorageDirectory(), "Geocaching_Clue.pcm");
+                        new AsyncBlobUploader(AddTagActivity.this, cb, AUDIO_TYPE)
+                                .execute(fileUp);
+                        Intent intent = new Intent(AddTagActivity.this, MainActivity.class);
+                        //MainActivity.db = temp;
+                        //MainActivity.count += 1;
+                        startActivity(intent);
+                    }
+                });
+			//Intent intent = new Intent(AddTagActivity.this, MainActivity.class);
+			//MainActivity.db = temp;
 			MainActivity.count += 1;
-			startActivity(intent);
+			//startActivity(intent);
 			//MainActivity.myMap.addMarker(marker);
 			}
 		}
@@ -164,8 +197,9 @@ public class AddTagActivity extends Activity {
 	
 	
 	private void startRecord(){
-
-		File file = new File(Environment.getExternalStorageDirectory(), "test5.pcm"); 
+        EditText et=(EditText)findViewById(R.id.editText1);
+        txt = (String) et.getText().toString();
+        File file = new File(Environment.getExternalStorageDirectory(), txt.replace(" ", "_") + ".pcm");
 				
 		try {
 			file.createNewFile();
@@ -245,44 +279,67 @@ public class AddTagActivity extends Activity {
 		}
 	}
 
-    public boolean putTag(double latitude, double longitude, Bundle wrapper) {
-        //if (wrapper.containsKey("Tags") && wrapper.containsKey("tagTitle") && wrapper.containsKey("tagContentType") && wrapper.containsKey("fileName")) {
-        if (wrapper.containsKey("fileName")) {
-            CloudEntity tag = new CloudEntity("Tag");
-            String tagTitle = wrapper.getString("tagTitle");
-            final int tagContentType = wrapper.getInt("tagContentType");
-            String fileName = wrapper.getString("fileName");
-            tag.put("title", tagTitle);
-            tag.put("contentType", tagContentType);
-            tag.put("latitude", latitude);
-            tag.put("longitude", longitude);
+	String txt;
 
-            System.out.println("Shit works!");
 
-            final CloudBackend cb;
-            try {
-                cb = new CloudBackend();
-                cb.insert(tag);
-            } catch (IOException e) {
-                Log.e("Error", "Updating database failed");
-                return false;
+    public void getTagsWithinCooords(double minLatitude, double minLongitude, double maxLatitude, double maxLongitude) {
+        System.out.println("INCOOORD");
+        try {
+            CloudBackend cb = new CloudBackend();
+            CloudQuery cq = new CloudQuery("Tag");
+            //Filter F = new Filter();
+            //cq.setFilter(F.and(F.gt("latitude", minLatitude), F.lt("latitude", maxLatitude), F.gt("longitude", minLongitude), F.lt("longitude", maxLongitude)));
+            List<CloudEntity> l = cb.list(cq);
+            /*CloudEntity[] arr = (CloudEntity[]) l.toArray();
+            for (int i =0; i < arr.length; i += 1) {
+                System.out.println(arr[i].get("title"));
+            }*/
+            Iterator<CloudEntity> iter = l.iterator();
+            while (iter.hasNext()) {
+                System.out.println(iter.next().get("title"));
             }
 
-            final File fileUp = new File(Environment.getExternalStorageDirectory(), fileName);
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    new AsyncBlobUploader(AddTagActivity.this, cb, AUDIO_TYPE).execute(fileUp);
-                }
-            });
-            return true;
-        } else {
-            Log.d("Placing tag", "Missing necessary values");
-            return false;
+        } catch (Exception e) {
+            Log.e("getTAGERROR", "SHOOT");
         }
     }
 
-	
+
+    private class PostTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            String url = "http://justmunim.pythonanywhere.com/messages";
+
+            HttpResponse response;
+            HttpClient httpclient = new DefaultHttpClient();
+            try {
+
+                HttpPost post = new HttpPost(url);
+                List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
+                postParameters.add(new BasicNameValuePair("name", params[0]));
+                postParameters.add(new BasicNameValuePair("comment", params[1]));
+
+                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters);
+                post.setEntity(entity);
+
+                response = httpclient.execute(post);
+
+            } catch (ClientProtocolException e) {
+                //TODO Handle problems..
+            } catch (IOException e) {
+                //TODO Handle problems..
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String arg0) {
+            //reload(null);
+        }
+
+    }
 
 }

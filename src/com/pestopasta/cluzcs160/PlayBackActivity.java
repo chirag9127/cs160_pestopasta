@@ -5,7 +5,7 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Environment;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -14,9 +14,10 @@ import android.widget.RatingBar;
 import android.widget.RatingBar.OnRatingBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.Intent;
 
+import com.google.cloud.backend.core.AsyncBlobDownloader;
 import com.google.cloud.backend.core.CloudBackend;
-import com.google.cloud.backend.core.CloudEntity;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -32,6 +33,7 @@ public class PlayBackActivity extends Activity{
 	private AudioTrack audioTrack;
 	private RatingBar ratingBar;
 	private Button btnSubmit;
+    private Button btnComment;
 	private boolean paused = false;
 
     private final static int AUDIO_TYPE = 1111;
@@ -47,6 +49,15 @@ public class PlayBackActivity extends Activity{
           //pauseButton = (ImageButton)findViewById(R.id.imageButton2);
           addListenerOnRatingBar();
       	  addListenerOnButton();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                CloudBackend cb = new CloudBackend();
+                File file = new File(Environment.getExternalStorageDirectory(), MainActivity.currAf.title.replace(" ", "_") + ".pcm");
+                new AsyncBlobDownloader(MainActivity.currAf, cb, PlayBackActivity.this)
+                        .execute(file);
+            }
+        });
           playButton.setOnClickListener(new OnClickListener(){
 
             @Override
@@ -124,6 +135,7 @@ public class PlayBackActivity extends Activity{
 	 
 		ratingBar = (RatingBar) findViewById(R.id.ratingBar);
 		btnSubmit = (Button) findViewById(R.id.btnSubmit);
+        btnComment = (Button) findViewById(R.id.btnComment);
 	 
 		//if click on me, then display the current rating value.
 		btnSubmit.setOnClickListener(new OnClickListener() {
@@ -139,13 +151,37 @@ public class PlayBackActivity extends Activity{
 			}
 	 
 		});
-	 
+
+          btnComment.setOnClickListener(new OnClickListener() {
+
+              @Override
+              public void onClick(View v) {
+
+                  Intent intent = new Intent(PlayBackActivity.this, CommentActivity.class);
+                  startActivity(intent);
+
+
+              }
+
+          });
+
+
 	  }
 	  
 	void playRecord(){
-		  
-		  //File file = new File(Environment.getExternalStorageDirectory(), "test.pcm");
-		  File file = MainActivity.currAf.myfile;
+        /*runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                CloudBackend cb = new CloudBackend();
+                file = new File(Environment.getExternalStorageDirectory(), "test3.pcm");
+                new AsyncBlobDownloader(MainActivity.currAf, cb, PlayBackActivity.this)
+                        .execute(file);
+            }
+        });*/
+
+
+
+          File file = MainActivity.currAf.myfile;
 		  if (file == null) {
 		  System.out.print("NULL NULL NULL");
 		  }
@@ -203,22 +239,4 @@ public class PlayBackActivity extends Activity{
 		   e.printStackTrace();
 		  }
 		 }
-
-    public Bundle getTag(String id) {
-        Bundle wrapper = new Bundle();
-        try {
-            CloudBackend cb = new CloudBackend();
-            CloudEntity tag = cb.get("Tag", id);
-            for (String key: tag.getProperties().keySet()) {
-                if ((tag.get(key)) instanceof String) {
-                    wrapper.putString(key, (String) tag.get(key));
-                } else if ((tag.get(key)) instanceof Integer) {
-                    wrapper.putInt(key, (Integer) tag.get(key));
-                }
-            }
-        } catch (IOException e) {
-            Log.e("Error", "Retrieving tag from database failed");
-        }
-        return wrapper;
-    }
 }

@@ -9,6 +9,8 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.VideoView;
 
+import com.pestopasta.cluzcs160.AudioFile;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,7 +24,7 @@ public class AsyncBlobDownloader extends AsyncTask<File, Integer, File> {
     final static int IMAGE_TYPE = 1112;
     final static int VIDEO_TYPE = 1113;
 
-    private AudioTrack audioContent;
+    private AudioFile audioContent;
     private ImageView imageContent;
     private VideoView videoContent;
     private ProgressDialog pd;
@@ -31,7 +33,7 @@ public class AsyncBlobDownloader extends AsyncTask<File, Integer, File> {
     private int mediaType;
     private Context context;
 
-    public AsyncBlobDownloader(AudioTrack audioContent, CloudBackend cb, Context context) {
+    public AsyncBlobDownloader(AudioFile audioContent, CloudBackend cb, Context context) {
         this.audioContent = audioContent;
         this.cb = cb;
         this.bucketName = "audio_tags";
@@ -120,6 +122,8 @@ public class AsyncBlobDownloader extends AsyncTask<File, Integer, File> {
             imageContent.setImageURI(Uri.fromFile(result));
         } else if (mediaType == AUDIO_TYPE) {
             // add code to set downloaded file to audio track
+            Log.d("POSTEXEC", "Audio File");
+            audioContent.myfile = result;
         } if (mediaType == VIDEO_TYPE) {
             // add code to set downloaded file to video track
         }

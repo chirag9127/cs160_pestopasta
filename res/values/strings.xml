@@ -11,10 +11,14 @@
         <item>Public</item>
         <item>Private</item>
     </string-array>
+    <string name="add">Post</string>
+    <string name="name">Name</string>
+    <string name="message">Text</string>
+    <string name="refresh">Refresh</string>
+    <string name="newmessage">Add a Comment</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
 
-    <string name="action_color_toggle">BW/Color Toggle</string>
-    <string name="action_zoom_toggle">Zoom Mode</string>
-    <string name="action_undo">Undo</string>
     <string name="drawer_open">Slider Menu Opened</string>
     <string name="drawer_close">Slider Menu Closed</string>
 

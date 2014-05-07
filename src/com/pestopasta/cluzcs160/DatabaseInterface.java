@@ -12,9 +12,13 @@ import com.google.cloud.backend.core.AsyncBlobUploader;
 import com.google.cloud.backend.core.CloudBackend;
 import com.google.cloud.backend.core.CloudBackendFragment;
 import com.google.cloud.backend.core.CloudEntity;
+import com.google.cloud.backend.core.CloudQuery;
+import com.google.cloud.backend.core.Filter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseInterface extends Activity {
 
@@ -27,32 +31,6 @@ public class DatabaseInterface extends Activity {
     private FragmentManager mFragmentManager;
     private CloudBackendFragment mProcessingFragment;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_database_interface);
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.database_interface, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
 
 
@@ -74,8 +52,9 @@ public class DatabaseInterface extends Activity {
         return wrapper;
     }
 
-    public boolean putTag(double latitude, double longitude, Bundle wrapper) {
-        if (wrapper.containsKey("Tags") && wrapper.containsKey("tagTitle") && wrapper.containsKey("tagContentType") && wrapper.containsKey("fileName")) {
+   /* public boolean putTag(double latitude, double longitude, Bundle wrapper) {
+        //if (wrapper.containsKey("Tags") && wrapper.containsKey("tagTitle") && wrapper.containsKey("tagContentType") && wrapper.containsKey("fileName")) {
+        if (wrapper.containsKey("fileName")) {
             CloudEntity tag = new CloudEntity("Tag");
             String tagTitle = wrapper.getString("tagTitle");
             int tagContentType = wrapper.getInt("tagContentType");
@@ -104,9 +83,21 @@ public class DatabaseInterface extends Activity {
             return false;
         }
     }
-
+*/
     public void getTagsWithinCooords(double minLatitude, double minLongitude, double maxLatitude, double maxLongitude) {
-
+        try {
+            CloudBackend cb = new CloudBackend();
+            CloudQuery cq = new CloudQuery("Tag");
+            Filter F = new Filter();
+            cq.setFilter(F.and(F.gt("latitude", minLatitude), F.lt("latitude", maxLatitude), F.gt("longitude", minLongitude), F.lt("longitude", maxLongitude)));
+            List<CloudEntity> l = cb.list(cq);
+            CloudEntity[] arr = (CloudEntity[]) l.toArray();
+            for (int i =0; i < arr.length; i += 1) {
+                System.out.println(arr[i].get("title"));
+            }
+        } catch (Exception e) {
+            Log.e("getTAGERROR", "SHOOT");
+        }
     }
 
 }

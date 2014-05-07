@@ -4,6 +4,9 @@
 
     <color name="darkPurple">#7882c0</color>
     <color name="lightPurple">#a6b1db</color>
+    <color name="grayish">#eeeeee</color>
+    <color name="aqua">#39c</color>
+    <color name="almostblack">#333333</color>
 
     <color name="orange">#ff5500</color>
     <color name="transparent">#00000000</color>

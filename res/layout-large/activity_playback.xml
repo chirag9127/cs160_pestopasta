@@ -59,12 +59,21 @@
 
     <Button
         android:id="@+id/btnSubmit"
-        android:layout_width="fill_parent"
+        android:layout_width="230dp"
         android:layout_height="80dp"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
         android:background="@drawable/buttonshape"
         android:text="Submit Rating"
         android:textColor="#ffffff" />
+    <Button
+        android:id="@+id/btnComment"
+        android:layout_width="230dp"
+        android:layout_height="80dp"
+        android:background="@drawable/buttonshape"
+        android:text="View/Add Comments"
+        android:textColor="#ffffff"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>
