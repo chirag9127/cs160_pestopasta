@@ -2,7 +2,12 @@ package com.pestopasta.cluzcs160;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -13,31 +18,37 @@ import android.location.LocationListener;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.cloud.backend.core.AsyncBlobUploader;
 import com.google.cloud.backend.core.CloudBackend;
 import com.google.cloud.backend.core.CloudEntity;
 import com.google.cloud.backend.core.CloudQuery;
+import com.pestopasta.slidingmenu.adapter.NavDrawerListAdapter;
+import com.pestopasta.slidingmenu.model.NavDrawerItem;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -226,19 +237,18 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
             }
         });
 
-        myMap.setOnMarkerClickListener(new OnMarkerClickListener(){
+        myMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
 
             @Override
-            public boolean onMarkerClick(Marker arg0) {
+            public void onInfoWindowClick(Marker arg0) {
                 //arg0.showInfoWindow();
 
                 int i = mapper.get(arg0.getSnippet());
                 AudioFile af = db.get(i);
                 currAf = af;
                 System.out.println("CLICK CLICK CLICK CLICK " + af.title);
-                Intent intent= new Intent(MainActivity.this, PlayBackActivity.class);
+                Intent intent = new Intent(MainActivity.this, PlayBackActivity.class);
                 startActivity(intent);
-                return false;
             }
         });
 
@@ -345,7 +355,6 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
         // if nav drawer is opened, hide the action items
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
         menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
-        menu.findItem(R.id.compass).setVisible(!drawerOpen);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -374,10 +383,6 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
             return true;
         }
 	    switch (item.getItemId()) {
-	      case R.id.compass:
-	    	  Intent intent = new Intent(this,Compass.class);
-	  		  startActivity(intent);
-	    	  return true;
 	      default:
 	            return super.onOptionsItemSelected(item);
 	      

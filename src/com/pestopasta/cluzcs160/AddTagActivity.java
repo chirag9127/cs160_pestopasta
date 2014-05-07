@@ -10,13 +10,14 @@ import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.google.cloud.backend.core.AsyncBlobDownloader;
 import com.google.cloud.backend.core.AsyncBlobUploader;
 import com.google.cloud.backend.core.CloudBackend;
 import com.google.cloud.backend.core.CloudEntity;
@@ -53,6 +54,7 @@ public class AddTagActivity extends Activity {
 	double x, y;
 	Boolean recording = false;
 	File myFile;
+    EditText et;
 
     private final static int AUDIO_TYPE = 1111;
     private final static int IMAGE_TYPE = 1112;
@@ -74,6 +76,10 @@ public class AddTagActivity extends Activity {
         startRec = (Button)findViewById(R.id.startrec);
         //stopRec = (Button)findViewById(R.id.stoprec);
         playBack = (Button)findViewById(R.id.playback);
+        playBack.setVisibility(View.GONE);
+        et=(EditText)findViewById(R.id.editText1);
+        et.addTextChangedListener(textWatcher);
+        done.setEnabled(false);
         //String s = "Your Location:" + intent.getStringExtra("lat") + " , " + intent.getStringExtra("long");
         //System.out.println("MAYAYAMAYHFFODFF:" + intent.getStringExtra("lat"));
         //playBack.setText(s);
@@ -125,9 +131,35 @@ public class AddTagActivity extends Activity {
 				startRec.setBackground(getResources().getDrawable(R.drawable.record_red));
 				//startRec.setText("Start Recording");
 				recording = false;
+                if (txt != null ) {
+                    done.setEnabled(true);
+                }
+                playBack.setVisibility(View.VISIBLE);
+
 			}
 
 		}};
+
+    TextWatcher textWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+            if (charSequence.length() > 0 && myFile != null) {
+                done.setEnabled(true);
+            } else {
+                done.setEnabled(false);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+
+        }
+    };
 		
 	/*OnClickListener stopRecOnClickListener
 	= new OnClickListener(){
@@ -146,7 +178,7 @@ public class AddTagActivity extends Activity {
 			}
 		
 	};
-	
+
 	OnClickListener doneOnClickListener
     = new OnClickListener(){
 
@@ -156,7 +188,6 @@ public class AddTagActivity extends Activity {
 			//MarkerOptions marker = new MarkerOptions().position(new LatLng(x, y))
 			//		.title("New Clue 2");
 			System.out.println("in ADDTAG");
-			EditText et=(EditText)findViewById(R.id.editText1);
 			txt=et.getText().toString();
             //PostTask pt = new PostTask();
             //pt.execute()
