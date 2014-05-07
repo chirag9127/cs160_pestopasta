@@ -19,7 +19,7 @@
 
             <ImageView
                 android:id="@+id/drawerSpinner"
-                android:src="@drawable/default_user"
+                android:src="@drawable/maneesh"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
@@ -30,10 +30,10 @@
                 android:padding="5dp"
                 android:layout_alignParentBottom="true"
                 android:alpha="0.8"
-                android:background="@color/lightPurple">
+                android:background="@color/darkPurple">
 
                 <TextView
-                    android:text="Loading"
+                    android:text="Maneesh"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="@dimen/abc_action_bar_title_text_size"

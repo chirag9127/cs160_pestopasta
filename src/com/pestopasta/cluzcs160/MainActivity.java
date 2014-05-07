@@ -133,8 +133,12 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
         navDrawerItems.add(new NavDrawerItem(2, "Public"));
         // Private checkbox
         navDrawerItems.add(new NavDrawerItem(2, "Private"));
-        // Save
-        navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
+        // Thick Divider
+        //navDrawerItems.add(new NavDrawerItem(3, null));
+        // Sign Out
+        //navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
+        // Settings
+        //navDrawerItems.add(new NavDrawerItem(navMenuTitles[1], navMenuIcons.getResourceId(1, -1)));
 
 
         // Recycle the typed array
@@ -497,9 +501,9 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 SystemBarTintManager tintManager = new SystemBarTintManager(com.pestopasta.cluzcs160.MainActivity.this);
                 int statusBarHeight = tintManager.getConfig().getStatusBarHeight();
-                myMap.setPadding(0,statusBarHeight+actionBarHeight,0,0);
+                myMap.setPadding(0,statusBarHeight+actionBarHeight,0,110);
             } else {
-                myMap.setPadding(0, actionBarHeight, 0, 0);
+                myMap.setPadding(0, actionBarHeight, 0, 110);
             }
             myMap.setOnMapClickListener(this);
             //myMap.setOnMarkerClickListener(this);
@@ -552,9 +556,11 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
     public void onMapClick(LatLng point) {
         ActionBar bar = getActionBar();
         if (bar.isShowing()) {
-            (new Thread(animateActionBarHide)).start();
+            Thread t = new Thread(animateActionBarHide);
+            t.start();
         } else {
-            (new Thread(animateActionBarShowTemp)).start();
+            Thread t = new Thread(animateActionBarShowTemp);
+            t.start();
         }
     }
 
@@ -589,11 +595,11 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     SystemBarTintManager tintManager = new SystemBarTintManager(com.pestopasta.cluzcs160.MainActivity.this);
                     int statusBarHeight = tintManager.getConfig().getStatusBarHeight();
-                    myMap.setPadding(0, statusBarHeight, 0, 0);
+                    myMap.setPadding(0, statusBarHeight, 0, 110);
                     lp.setMargins(0, statusBarHeight, 0, 0);
                     mDrawerList.setLayoutParams(lp);
                 } else {
-                    myMap.setPadding(0, 0, 0, 0);
+                    myMap.setPadding(0, 0, 0, 110);
                     lp.setMargins(0, 0, 0, 0);
                     mDrawerList.setLayoutParams(lp);
                 }
@@ -621,11 +627,11 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
                     //int actionBarColor = Color.parseColor("#BBffffff");
                     //tintManager.setStatusBarTintColor(actionBarColor);
                     int statusBarHeight = tintManager.getConfig().getStatusBarHeight();
-                    myMap.setPadding(0, statusBarHeight + actionBarHeight, 0, 0);
+                    myMap.setPadding(0, statusBarHeight + actionBarHeight, 0, 110);
                     lp.setMargins(0, statusBarHeight + actionBarHeight, 0, 0);
                     mDrawerList.setLayoutParams(lp);
                 } else {
-                    myMap.setPadding(0, actionBarHeight, 0, 0);
+                    myMap.setPadding(0, actionBarHeight, 0, 110);
                     lp.setMargins(0, actionBarHeight, 0, 0);
                     mDrawerList.setLayoutParams(lp);
                 }
@@ -636,7 +642,8 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
     Runnable animateActionBarShowTemp = new Runnable() {
         @Override
         public void run() {
-            h.post(showActionbarRunnable);
+            runOnUiThread(showActionbarRunnable);
+            Log.d("animateActionBarShowTemp", "posted showActionbarRunnable");
             h.removeCallbacksAndMessages(null);
             h.postDelayed(hideActionbarRunnable,8000);
         }
