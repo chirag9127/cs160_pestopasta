@@ -14,13 +14,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <ImageButton
+    <ImageView 
         android:id="@+id/compassIcon"
         android:layout_width="75dp"
         android:layout_height="75dp"
-        android:layout_alignParentRight="true"
-        android:background="@drawable/compass_icon"
-        android:onClick="getCompass" >
-    </ImageButton>
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/compass_icon" >
+    </ImageView>
 
 </RelativeLayout>
