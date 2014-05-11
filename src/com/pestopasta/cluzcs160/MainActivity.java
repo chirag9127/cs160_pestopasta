@@ -2,9 +2,11 @@ package com.pestopasta.cluzcs160;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
@@ -15,6 +17,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +36,7 @@ import android.view.animation.RotateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -103,53 +108,68 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
 
-        mTitle = mDrawerTitle = getTitle();
+        if (!haveNetworkConnection()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder( this );
+            builder
+                    .setMessage( "Error accessing the internet. Please try reopening the app when connectivity is restored." )
+                    .setCancelable( false )
+                    .setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            MainActivity.this.finish();
+                        }
+                    });
+            AlertDialog error = builder.create();
+            error.show();
+            return;
+        } else {
 
-        // load slide menu items
-        navMenuTitles = getResources().getStringArray(R.array.nav_drawer_items);
+            setContentView(R.layout.activity_main);
+            getActionBar().setDisplayHomeAsUpEnabled(true);
+            getActionBar().setHomeButtonEnabled(true);
 
-        // nav drawer icons from resources
-        navMenuIcons = getResources()
-                .obtainTypedArray(R.array.nav_drawer_icons);
+            mTitle = mDrawerTitle = getTitle();
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.list_slidermenu);
+            // load slide menu items
+            navMenuTitles = getResources().getStringArray(R.array.nav_drawer_items);
 
-        navDrawerItems = new ArrayList<NavDrawerItem>();
+            // nav drawer icons from resources
+            navMenuIcons = getResources()
+                    .obtainTypedArray(R.array.nav_drawer_icons);
 
-        // adding nav drawer items to array
+            mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+            mDrawerList = (ListView) findViewById(R.id.list_slidermenu);
 
-        // User image
-        navDrawerItems.add(new NavDrawerItem(0, null));
-        // Filter header
-        navDrawerItems.add(new NavDrawerItem("Filters"));
-        // Public checkbox
-        navDrawerItems.add(new NavDrawerItem(1, "Search"));
-        // Public checkbox
-        navDrawerItems.add(new NavDrawerItem(2, "Public"));
-        // Private checkbox
-        navDrawerItems.add(new NavDrawerItem(2, "Private"));
-        // Thick Divider
-        //navDrawerItems.add(new NavDrawerItem(3, null));
-        // Sign Out
-        //navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
-        // Settings
-        //navDrawerItems.add(new NavDrawerItem(navMenuTitles[1], navMenuIcons.getResourceId(1, -1)));
+            navDrawerItems = new ArrayList<NavDrawerItem>();
 
+            // adding nav drawer items to array
 
-        // Recycle the typed array
-        navMenuIcons.recycle();
+            // User image
+            navDrawerItems.add(new NavDrawerItem(0, null));
+            // Filter header
+            navDrawerItems.add(new NavDrawerItem("Filters"));
+            // Public checkbox
+            navDrawerItems.add(new NavDrawerItem(1, "Search"));
+            // Public checkbox
+            navDrawerItems.add(new NavDrawerItem(2, "Public"));
+            // Private checkbox
+            //navDrawerItems.add(new NavDrawerItem(2, "Private"));
+            // Thick Divider
+            //navDrawerItems.add(new NavDrawerItem(3, null));
+            // Sign Out
+            //navDrawerItems.add(new NavDrawerItem(navMenuTitles[0], navMenuIcons.getResourceId(0, -1)));
+            // Settings
+            //navDrawerItems.add(new NavDrawerItem(navMenuTitles[1], navMenuIcons.getResourceId(1, -1)));
 
-        mDrawerList.setOnItemClickListener(new SlideMenuClickListener());
+            // Recycle the typed array
+            navMenuIcons.recycle();
 
-        // setting the nav drawer list adapter
-        adapter = new NavDrawerListAdapter(this, R.layout.drawer_list_item,
-                navDrawerItems);
-        mDrawerList.setAdapter(adapter);
+            mDrawerList.setOnItemClickListener(new SlideMenuClickListener());
+
+            // setting the nav drawer list adapter
+            adapter = new NavDrawerListAdapter(this, R.layout.drawer_list_item,
+                    navDrawerItems);
+            mDrawerList.setAdapter(adapter);
 
         /*
         mDrawerListener = new DrawerLayout.DrawerListener(
@@ -176,42 +196,47 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
         };
         */
 
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                R.drawable.purpletheme_ic_navigation_drawer, //nav menu toggle icon
-                R.string.app_name, // nav drawer open - description for accessibility
-                R.string.app_name // nav drawer close - description for accessibility
-        ){
-            public void onDrawerClosed(View view) {
-                getActionBar().setTitle(mTitle);
-                // calling onPrepareOptionsMenu() to show action bar icons
-                invalidateOptionsMenu();
-                h.post(animateActionBarHide);
+            mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
+                    R.drawable.purpletheme_ic_navigation_drawer, //nav menu toggle icon
+                    R.string.app_name, // nav drawer open - description for accessibility
+                    R.string.app_name // nav drawer close - description for accessibility
+            ) {
+                public void onDrawerClosed(View view) {
+                    getActionBar().setTitle(mTitle);
+                    // calling onPrepareOptionsMenu() to show action bar icons
+                    invalidateOptionsMenu();
+                    h.post(animateActionBarHide);
+                }
+
+                public void onDrawerOpened(View drawerView) {
+                    getActionBar().setTitle(mDrawerTitle);
+                    // calling onPrepareOptionsMenu() to hide action bar icons
+                    invalidateOptionsMenu();
+                    h.post(animateActionBarShow);
+                    //Set Public Checked by Default
+                    CheckBox publicCheckbox = (CheckBox) findViewById(R.id.checkbox);
+                    if (publicCheckbox != null) {
+                        publicCheckbox.setChecked(true);
+                    }
+                }
+            };
+
+            mDrawerLayout.setScrimColor(Color.parseColor("#88ffffff"));
+            mDrawerLayout.setDrawerListener(mDrawerToggle);
+
+            if (savedInstanceState == null) {
+                // on first time display view for first nav item
+                displayView(0);
             }
 
-            public void onDrawerOpened(View drawerView) {
-                getActionBar().setTitle(mDrawerTitle);
-                // calling onPrepareOptionsMenu() to hide action bar icons
-                invalidateOptionsMenu();
-                h.post(animateActionBarShow);
-            }
-        };
-
-        mDrawerLayout.setScrimColor(Color.parseColor("#88ffffff"));
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-
-        if (savedInstanceState == null) {
-            // on first time display view for first nav item
-            displayView(0);
-        }
-
-        getMyLocation();
-        setUpMapIfNeeded();
-        hideActionbarRunnable.run();
-        //Hardcoding marker
+            getMyLocation();
+            setUpMapIfNeeded();
+            hideActionbarRunnable.run();
+            //Hardcoding marker
 		/*MarkerOptions marker = new MarkerOptions().position(new LatLng(37.871993, -122.257862))
 				.title("New Clue");
 		Marker m = myMap.addMarker(marker);*/
-        count = 0;
+            count = 0;
         /*if(count == 0) {
             db.put(count, new AudioFile("Campanile Tour", 37.871993, -122.257862,""+count, new File(Environment.getExternalStorageDirectory(), "test3.pcm")));
             count += 1;
@@ -221,47 +246,50 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
             count += 1;
         }
         addMarkers();*/
-        image = (ImageView) findViewById(R.id.compassIcon);
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        reload(null);
+            image = (ImageView) findViewById(R.id.compassIcon);
+            mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+            reload(null);
 
 
-        addTag = (Button)findViewById(R.id.button1);
+            addTag = (Button) findViewById(R.id.button1);
 
-        addTag.setOnClickListener(new View.OnClickListener() {
+            addTag.setOnClickListener(new View.OnClickListener() {
 
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, AddTagActivity.class);
-                System.out.println("YAYAYAYAYYAYAYYAOOOOOO:" + myLat);
-                intent.putExtra("lat", String.valueOf(myLat));
-                intent.putExtra("long", String.valueOf(myLong));
-                startActivity(intent);
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(MainActivity.this, AddTagActivity.class);
+                    System.out.println("YAYAYAYAYYAYAYYAOOOOOO:" + myLat);
+                    intent.putExtra("lat", String.valueOf(myLat));
+                    intent.putExtra("long", String.valueOf(myLong));
+                    startActivity(intent);
 
-            }
-        });
+                }
+            });
 
-        myMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            myMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
 
-            @Override
-            public void onInfoWindowClick(Marker arg0) {
-                //arg0.showInfoWindow();
+                @Override
+                public void onInfoWindowClick(Marker arg0) {
+                    //arg0.showInfoWindow();
 
-                int i = mapper.get(arg0.getSnippet());
-                AudioFile af = db.get(i);
-                currAf = af;
-                System.out.println("CLICK CLICK CLICK CLICK " + af.title);
-                Intent intent = new Intent(MainActivity.this, PlayBackActivity.class);
-                startActivity(intent);
-            }
-        });
+                    int i = mapper.get(arg0.getSnippet());
+                    AudioFile af = db.get(i);
+                    currAf = af;
+                    System.out.println("CLICK CLICK CLICK CLICK " + af.title);
+                    Intent intent = new Intent(MainActivity.this, PlayBackActivity.class);
+                    startActivity(intent);
+                }
+            });
 
-        SystemBarTintManager tintManager = new SystemBarTintManager(com.pestopasta.cluzcs160.MainActivity.this);
-        tintManager.setStatusBarTintEnabled(true);
-        int actionBarColor = Color.parseColor("#BBffffff");
-        tintManager.setStatusBarTintColor(actionBarColor);
+            SystemBarTintManager tintManager = new SystemBarTintManager(com.pestopasta.cluzcs160.MainActivity.this);
+            tintManager.setStatusBarTintEnabled(true);
+            int actionBarColor = Color.parseColor("#BBffffff");
+            tintManager.setStatusBarTintColor(actionBarColor);
 
+        }
 	}
+
+    private boolean haveNetworkConnection() { boolean haveConnectedWifi = false; boolean haveConnectedMobile = false; ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE); NetworkInfo[] netInfo = cm.getAllNetworkInfo(); for (NetworkInfo ni : netInfo) { if (ni.getTypeName().equalsIgnoreCase("WIFI")) if (ni.isConnected()) haveConnectedWifi = true; if (ni.getTypeName().equalsIgnoreCase("MOBILE")) if (ni.isConnected()) haveConnectedMobile = true; } return haveConnectedWifi || haveConnectedMobile; }
 
 
     /**
@@ -281,10 +309,12 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
     @Override
     protected void onResume() {
         super.onResume();
-        Thread t = new Thread(animateActionBarShowTemp);
-        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
-                SensorManager.SENSOR_DELAY_GAME);
-        t.start();
+        if (mSensorManager != null) {
+            Thread t = new Thread(animateActionBarShowTemp);
+            mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
+                    SensorManager.SENSOR_DELAY_GAME);
+            t.start();
+        }
     }
 
     @Override
@@ -357,9 +387,12 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // if nav drawer is opened, hide the action items
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-        menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
+        if (menu != null && mDrawerLayout != null) {
+            boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+            menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
+        }
         return super.onPrepareOptionsMenu(menu);
+
     }
 
     /**
@@ -371,14 +404,18 @@ public class MainActivity extends Activity implements LocationListener, GoogleMa
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         // Sync the toggle state after onRestoreInstanceState has occurred.
-        mDrawerToggle.syncState();
+        if (mDrawerToggle != null) {
+            mDrawerToggle.syncState();
+        }
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        // Pass any configuration change to the drawer toggles
-        mDrawerToggle.onConfigurationChanged(newConfig);
+        if (mDrawerToggle != null) {
+            // Pass any configuration change to the drawer toggles
+            mDrawerToggle.onConfigurationChanged(newConfig);
+        }
     }
 	
 	public boolean onOptionsItemSelected(MenuItem item) {

@@ -1,12 +1,17 @@
 package com.pestopasta.cluzcs160;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -64,6 +69,24 @@ public class AddTagActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
+        if (!haveNetworkConnection()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder( this );
+            builder
+                    .setMessage( "Error accessing the internet." )
+                    .setCancelable( false )
+                    .setNeutralButton( "Ok", new DialogInterface.OnClickListener()
+                    {
+                        public void onClick ( DialogInterface dialog, int which )
+                        {
+                            AddTagActivity.this.finish();
+                        }
+                    } );
+            AlertDialog error = builder.create();
+            error.show();
+            return;
+        }
         setContentView(R.layout.activity_addtag);
         Intent intent = getIntent();
         x = Double.parseDouble(intent.getStringExtra("lat"));
@@ -184,50 +207,65 @@ public class AddTagActivity extends Activity {
 
 		@Override
 		public void onClick(View v) {
-			if (myFile != null) {
-			//MarkerOptions marker = new MarkerOptions().position(new LatLng(x, y))
-			//		.title("New Clue 2");
-			System.out.println("in ADDTAG");
-			txt=et.getText().toString();
-            //PostTask pt = new PostTask();
-            //pt.execute()
-			HashMap<Integer, AudioFile> temp= MainActivity.db;
-			temp.put(MainActivity.count, new AudioFile(txt, x, y, "" + MainActivity.count, myFile));
-            String[] arr = new String[2];
-            arr[0] = txt;
-            arr[1] = (x + " " + y);
-            PostTask pt = new PostTask();
-            pt.execute(arr);
-			//MainActivity.count += 1;j7t
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        CloudBackend cb = new CloudBackend();
-                        //File file = new File(Environment.getExternalStorageDirectory(), "test3.pcm");
-                        Log.d("ADDTAG", "Test");
-                        final File fileUp = new File(Environment.getExternalStorageDirectory(), txt.replace(" ", "_") + ".pcm");
-                        //final File fileUp = new File(Environment.getExternalStorageDirectory(), "Geocaching_Clue.pcm");
-                        new AsyncBlobUploader(AddTagActivity.this, cb, AUDIO_TYPE)
-                                .execute(fileUp);
-                        Intent intent = new Intent(AddTagActivity.this, MainActivity.class);
-                        //MainActivity.db = temp;
-                        //MainActivity.count += 1;
-                        startActivity(intent);
-                    }
-                });
-			//Intent intent = new Intent(AddTagActivity.this, MainActivity.class);
-			//MainActivity.db = temp;
-			MainActivity.count += 1;
-			//startActivity(intent);
-			//MainActivity.myMap.addMarker(marker);
-			}
+            if (!haveNetworkConnection()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder( AddTagActivity.this );
+                builder
+                        .setMessage( "Error accessing the internet, please try again when connectivity is available." )
+                        .setCancelable( false )
+                        .setNeutralButton( "Ok", new DialogInterface.OnClickListener()
+                        {
+                            public void onClick ( DialogInterface dialog, int which )
+                            {}
+                        } );
+                AlertDialog error = builder.create();
+                error.show();
+                return;
+            } else {
+                if (myFile != null) {
+                    //MarkerOptions marker = new MarkerOptions().position(new LatLng(x, y))
+                    //		.title("New Clue 2");
+                    System.out.println("in ADDTAG");
+                    txt = et.getText().toString();
+                    //PostTask pt = new PostTask();
+                    //pt.execute()
+                    HashMap<Integer, AudioFile> temp = MainActivity.db;
+                    temp.put(MainActivity.count, new AudioFile(txt, x, y, "" + MainActivity.count, myFile));
+                    String[] arr = new String[2];
+                    arr[0] = txt;
+                    arr[1] = (x + " " + y);
+                    PostTask pt = new PostTask();
+                    pt.execute(arr);
+                    //MainActivity.count += 1;j7t
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            CloudBackend cb = new CloudBackend();
+                            //File file = new File(Environment.getExternalStorageDirectory(), "test3.pcm");
+                            Log.d("ADDTAG", "Test");
+                            final File fileUp = new File(Environment.getExternalStorageDirectory(), txt.replace(" ", "_") + ".pcm");
+                            //final File fileUp = new File(Environment.getExternalStorageDirectory(), "Geocaching_Clue.pcm");
+                            new AsyncBlobUploader(AddTagActivity.this, cb, AUDIO_TYPE)
+                                    .execute(fileUp);
+                            Intent intent = new Intent(AddTagActivity.this, MainActivity.class);
+                            //MainActivity.db = temp;
+                            //MainActivity.count += 1;
+                            startActivity(intent);
+                        }
+                    });
+                    //Intent intent = new Intent(AddTagActivity.this, MainActivity.class);
+                    //MainActivity.db = temp;
+                    MainActivity.count += 1;
+                    //startActivity(intent);
+                    //MainActivity.myMap.addMarker(marker);
+                }
+            }
 		}
 	
 };
-	
-	
-	
-	private void startRecord(){
+
+    private boolean haveNetworkConnection() { boolean haveConnectedWifi = false; boolean haveConnectedMobile = false; ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE); NetworkInfo[] netInfo = cm.getAllNetworkInfo(); for (NetworkInfo ni : netInfo) { if (ni.getTypeName().equalsIgnoreCase("WIFI")) if (ni.isConnected()) haveConnectedWifi = true; if (ni.getTypeName().equalsIgnoreCase("MOBILE")) if (ni.isConnected()) haveConnectedMobile = true; } return haveConnectedWifi || haveConnectedMobile; }
+
+    private void startRecord(){
         EditText et=(EditText)findViewById(R.id.editText1);
         txt = (String) et.getText().toString();
         File file = new File(Environment.getExternalStorageDirectory(), txt.replace(" ", "_") + ".pcm");

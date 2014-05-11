@@ -1,11 +1,19 @@
 package com.pestopasta.cluzcs160;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -21,18 +29,12 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CommentActivity extends Activity {
 
@@ -43,7 +45,24 @@ public class CommentActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_comment);
-
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
+        if (!haveNetworkConnection()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder( this );
+            builder
+                    .setMessage( "Error accessing the internet." )
+                    .setCancelable( false )
+                    .setNeutralButton( "Ok", new DialogInterface.OnClickListener()
+                    {
+                        public void onClick ( DialogInterface dialog, int which )
+                        {
+                            CommentActivity.this.finish();
+                        }
+                    } );
+            AlertDialog error = builder.create();
+            error.show();
+            return;
+        }
         //create a simple adapter
         adapter = new SimpleAdapter(this,
                 data,							 //a list of hashmaps
@@ -103,6 +122,9 @@ public class CommentActivity extends Activity {
         return true;
     }
 
+    private boolean haveNetworkConnection() { boolean haveConnectedWifi = false; boolean haveConnectedMobile = false; ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE); NetworkInfo[] netInfo = cm.getAllNetworkInfo(); for (NetworkInfo ni : netInfo) { if (ni.getTypeName().equalsIgnoreCase("WIFI")) if (ni.isConnected()) haveConnectedWifi = true; if (ni.getTypeName().equalsIgnoreCase("MOBILE")) if (ni.isConnected()) haveConnectedMobile = true; } return haveConnectedWifi || haveConnectedMobile; }
+
+
     //post values from the entry form to the server
     public void post(View v) {
         EditText nameBox = (EditText)findViewById(R.id.namebox);
@@ -111,8 +133,23 @@ public class CommentActivity extends Activity {
         EditText messageBox = (EditText)findViewById(R.id.messagebox);
         String message = messageBox.getText().toString();
 
-        PostTask task = new PostTask();
-        task.execute(name, message);
+        if (!haveNetworkConnection()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder( CommentActivity.this );
+            builder
+                    .setMessage( "Error accessing the internet, please try again when connectivity is available." )
+                    .setCancelable( false )
+                    .setNeutralButton( "Ok", new DialogInterface.OnClickListener()
+                    {
+                        public void onClick ( DialogInterface dialog, int which )
+                        {}
+                    } );
+            AlertDialog error = builder.create();
+            error.show();
+            return;
+        } else {
+            PostTask task = new PostTask();
+            task.execute(name, message);
+        }
     }
 
     //fetch the list of messages from the server
